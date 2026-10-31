@@ -6,6 +6,7 @@ import {
   formatInfoPublishedAt,
   getInfoPostBySlug,
   getInfoPostSlugs,
+  getInfoPreviewText,
 } from "@/lib/info-posts";
 
 type PageProps = {
@@ -13,14 +14,15 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-  return getInfoPostSlugs().map((slug) => ({ slug }));
+  const slugs = await getInfoPostSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getInfoPostBySlug(slug);
+  const post = await getInfoPostBySlug(slug);
 
   if (!post) {
     return { title: "お知らせが見つかりません" };
@@ -28,13 +30,13 @@ export async function generateMetadata({
 
   return {
     title: post.title,
-    description: post.body.slice(0, 120),
+    description: getInfoPreviewText(post, 120),
   };
 }
 
 export default async function InfoDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = getInfoPostBySlug(slug);
+  const post = await getInfoPostBySlug(slug);
 
   if (!post) {
     notFound();
@@ -51,19 +53,33 @@ export default async function InfoDetailPage({ params }: PageProps) {
         </Link>
 
         <header className="mt-8 border-b border-stone-200 pb-6">
-          <time
-            dateTime={post.publishedAt}
-            className="text-sm text-stone-500"
-          >
-            {formatInfoPublishedAt(post.publishedAt)}
-          </time>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <time
+              dateTime={post.publishedAt}
+              className="text-sm text-stone-500"
+            >
+              {formatInfoPublishedAt(post.publishedAt)}
+            </time>
+            {post.category ? (
+              <span className="text-xs font-medium text-sky-900">
+                {post.category}
+              </span>
+            ) : null}
+          </div>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             {post.title}
           </h1>
         </header>
 
         <div className="mt-8 space-y-8">
-          <p className="whitespace-pre-wrap text-base leading-8">{post.body}</p>
+          {post.bodyFormat === "html" ? (
+            <div
+              className="info-html text-base leading-8"
+              dangerouslySetInnerHTML={{ __html: post.body }}
+            />
+          ) : (
+            <p className="whitespace-pre-wrap text-base leading-8">{post.body}</p>
+          )}
 
           {post.image ? (
             <figure className="overflow-hidden rounded-lg border border-stone-200 bg-stone-50">

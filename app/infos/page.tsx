@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   formatInfoPublishedAt,
   getInfoPosts,
+  getInfoPreviewText,
 } from "@/lib/info-posts";
 
 export const metadata: Metadata = {
@@ -11,8 +12,8 @@ export const metadata: Metadata = {
     "太陽不動産株式会社からの休業日や店舗のお知らせ一覧です。",
 };
 
-export default function InfosPage() {
-  const posts = getInfoPosts();
+export default async function InfosPage() {
+  const posts = await getInfoPosts();
 
   return (
     <main className="flex flex-1 flex-col bg-white text-stone-900">
@@ -37,17 +38,24 @@ export default function InfosPage() {
                   href={`/infos/${post.slug}`}
                   className="group block py-5 transition-colors hover:bg-stone-50 sm:py-6"
                 >
-                  <time
-                    dateTime={post.publishedAt}
-                    className="text-sm text-stone-500"
-                  >
-                    {formatInfoPublishedAt(post.publishedAt)}
-                  </time>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <time
+                      dateTime={post.publishedAt}
+                      className="text-sm text-stone-500"
+                    >
+                      {formatInfoPublishedAt(post.publishedAt)}
+                    </time>
+                    {post.category ? (
+                      <span className="text-xs font-medium text-sky-900">
+                        {post.category}
+                      </span>
+                    ) : null}
+                  </div>
                   <p className="mt-1 text-lg font-medium text-stone-900 group-hover:text-sky-900">
                     {post.title}
                   </p>
                   <p className="mt-2 line-clamp-2 text-base leading-7 text-stone-600">
-                    {post.body}
+                    {getInfoPreviewText(post)}
                   </p>
                   {post.image ? (
                     <p className="mt-2 text-xs text-stone-400">画像あり</p>

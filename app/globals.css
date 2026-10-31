@@ -20,3 +20,23 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+.info-html :where(h2, h3, h4) {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 1.5rem;
+}
+
+.info-html h2 {
+  font-size: 1.25rem;
+}
+
+.info-html p {
+  margin-top: 0.75rem;
+}
+
+.info-html a {
+  color: #0c4a6e;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
