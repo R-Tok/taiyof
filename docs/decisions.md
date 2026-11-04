@@ -21,7 +21,7 @@ URL ツリーの詳細は [`docs/site-map.md`](./site-map.md) を参照。
 - 物件情報やお知らせに加え、会社概要も運用者が CMS で更新できるようにする。CMS の候補は microCMS。
 - CMS を接続するまでは、原稿を `lib/` の TypeScript 定数で管理する。接続時は取得処理を差し替え、表示側の形はできるだけ維持する。
 - microCMS 連携は **お知らせ（`/infos`）から先に** つなぐ。物件 API はスキーマ確定後。
-- microCMS の API ID はパスに合わせる（お知らせ `infos`、物件 `properties`）。
+- microCMS の API ID は、お知らせ `infos`、売買物件 `deal`。物件詳細の URL は slug フィールドがあればそれを使い、無ければコンテンツ ID。
 - 詳細 URL 用にコンテンツへ **`slug` フィールド** を持たせる（コンテンツ ID は URL に使わない）。
 - 反映は **一定時間キャッシュ + 公開時 Webhook で再生成**。
 - 環境変数未設定時は現行の `lib/` 定数を表示する。取得失敗時はエラー画面にする。
@@ -34,7 +34,7 @@ URL ツリーの詳細は [`docs/site-map.md`](./site-map.md) を参照。
 
 ### サイトマップ・URL
 
-- **実装済**: `/company`、`/infos`、`/infos/[slug]`、`/deal`、`/deal/land`、`/deal/house-mansion`、`/properties/[slug]`。カテゴリ定義は `lib/property-routes.ts`、物件サンプルは `lib/properties.ts`。
+- **実装済**: `/company`、`/infos`、`/infos/[slug]`、`/deal`、`/deal/land`、`/deal/house-mansion`、`/properties/[slug]`。カテゴリ定義は `lib/property-routes.ts`。売買物件は microCMS の `deal` API（`category` が「土地」「戸建・マンション」）から取得する。
 - **単一ページ**: `/contact`（実装済）。`/privacy-policy` は未実装。
 - **物件からの問い合わせ**: `/contact?param=` に物件名を渡し、「問い合わせ物件名」欄へ反映（現行 `contact/index.php?param=` 互換）。
 - **売買ルート**: `/deal` は `app/deal/[[...category]]` に統合。Next.js 16 では `/deal/page.tsx` と optional catch-all の併存不可。

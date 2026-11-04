@@ -23,12 +23,13 @@ function getCategoryForProperty(categoryKey: string) {
 }
 
 export async function generateStaticParams() {
-  return getPropertySlugs().map((slug) => ({ slug }));
+  const slugs = await getPropertySlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const property = getPropertyBySlug(slug);
+  const property = await getPropertyBySlug(slug);
 
   if (!property) {
     return { title: "物件が見つかりません" };
@@ -36,13 +37,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: property.name,
-    description: `${property.address} ${property.price}`.trim(),
+    description: `${property.address ?? ""} ${property.price ?? ""}`.trim(),
   };
 }
 
 export default async function PropertyDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const property = getPropertyBySlug(slug);
+  const property = await getPropertyBySlug(slug);
 
   if (!property) {
     notFound();
@@ -54,7 +55,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   }
 
   const detailFields = getDetailFields(property);
-  const images = property.images?.length
+  const images = property.images.length
     ? property.images
     : property.thumbnail
       ? [property.thumbnail]
@@ -77,7 +78,9 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             {property.name}
           </h1>
-          <p className="mt-2 text-lg text-stone-700">{property.price}</p>
+          {property.price ? (
+            <p className="mt-2 text-lg text-stone-700">{property.price}</p>
+          ) : null}
         </header>
 
         {images.length > 0 ? (
@@ -107,19 +110,14 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               className="grid gap-1 py-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-6 sm:py-5"
             >
               <dt className="text-sm font-medium text-stone-500">{field.label}</dt>
-              <dd className="text-base leading-7">{field.value}</dd>
+              <dd
+                className={`text-base leading-7 ${field.preWrap ? "whitespace-pre-wrap" : ""}`}
+              >
+                {field.value}
+              </dd>
             </div>
           ))}
         </dl>
-
-        {property.notes ? (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold text-stone-900">備考</h2>
-            <p className="mt-3 whitespace-pre-wrap leading-8 text-stone-700">
-              {property.notes}
-            </p>
-          </section>
-        ) : null}
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link

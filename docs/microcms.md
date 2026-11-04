@@ -5,7 +5,7 @@
 ## 決まっていること
 
 - 最初に接続するのは **お知らせ**（`/infos`）。物件は後から。
-- API ID はパスに合わせる（お知らせ `infos`、物件 `properties`）。
+- API ID はお知らせ `infos`、売買物件 `deal`。
 - 詳細 URL は **カスタム `slug` フィールド**。
 - キャッシュ + 公開時 Webhook。
 - キー未設定時は `lib/` の定数。取得失敗時はエラー画面。
@@ -56,7 +56,7 @@ MICROCMS_API_KEY=your-api-key
    - `app/infos` / `app/infos/[slug]`
    - 画像フィールド追加時は `next.config.ts` に `images.microcms-assets.io` を許可
    - 再検証用 Route Handler + Webhook は未実装（`cacheTag("infos")` のみ付与済）
-6. **物件はスキーマ確定後**に API ID `properties` を作り、同じパターンで `lib/properties.ts` を差し替える。
+6. **売買物件は接続済**（API ID `deal`）。`category` の値で `/deal/land` と `/deal/house-mansion` に振り分ける。詳細 URL は `slug` があればそれを、なければコンテンツ ID。
 
 ## 要件メモ（指摘）
 

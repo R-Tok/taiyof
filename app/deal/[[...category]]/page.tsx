@@ -104,7 +104,7 @@ export default async function DealPage({ params }: PageProps) {
     notFound();
   }
 
-  const properties = getPropertiesByCategoryKey(definition.key);
+  const properties = await getPropertiesByCategoryKey(definition.key);
   const breadcrumbs = getCategoryBreadcrumbs(definition);
 
   return (
@@ -118,7 +118,10 @@ export default async function DealPage({ params }: PageProps) {
           <p className="mt-3 text-stone-600">{definition.description}</p>
         ) : null}
 
-        <DealPropertyList properties={properties} />
+        <DealPropertyList
+          properties={properties}
+          kind={definition.deal?.kind ?? "house-mansion"}
+        />
       </div>
     </main>
   );
