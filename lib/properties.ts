@@ -7,7 +7,13 @@ import {
   isMicroCMSConfigured,
   MicroCMSFetchError,
 } from "@/lib/microcms";
-import type { CategoryDefinition, DealKind } from "@/lib/property-routes";
+import {
+  getAllCategoryDefinitions,
+  type CategoryDefinition,
+  type DealKind,
+  type LayoutGroup,
+  type RentBuildingKind,
+} from "@/lib/property-routes";
 
 export type PropertyImage = {
   src: string;
@@ -26,10 +32,17 @@ export type Property = {
   slug: string;
   categoryKey: CategoryDefinition["key"];
   dealKind?: DealKind;
+  buildingKind?: RentBuildingKind;
+  layoutGroup?: LayoutGroup;
   name: string;
   address?: string;
   price?: string;
   layout?: string;
+  rentFee?: string;
+  deposit?: string;
+  gratuity?: string;
+  commonFee?: string;
+  parking?: string;
   landArea?: string;
   buildingArea?: string;
   landCategory?: string;
@@ -78,7 +91,13 @@ const CMS_FIELD_LABELS: Record<string, string> = {
   category: "種別",
   address: "所在地",
   layout: "間取",
+  layout_category: "間取り分類",
   price: "価格",
+  fee_rent: "賃料/月",
+  fee_deposit: "敷金",
+  fee_gratuity: "礼金",
+  fee_common: "共益費",
+  parking: "駐車場",
   area_land: "土地面積",
   area_owned: "専有面積",
   land_category: "地目",
@@ -168,11 +187,29 @@ function formatCmsValue(value: unknown): string | undefined {
   return undefined;
 }
 
-function buildDetailFields(item: MicroCMSDeal): PropertyDetailField[] {
+const RENT_FIELD_ORDER = [
+  "name",
+  "category",
+  "address",
+  "layout",
+  "layout_category",
+  "fee_rent",
+  "fee_deposit",
+  "fee_gratuity",
+  "fee_common",
+  "parking",
+  "building_age",
+  "notes",
+];
+
+function buildDetailFields(
+  item: MicroCMSDeal,
+  order: string[] = CMS_FIELD_ORDER,
+): PropertyDetailField[] {
   const used = new Set<string>();
   const rows: PropertyDetailField[] = [];
 
-  for (const key of CMS_FIELD_ORDER) {
+  for (const key of order) {
     const value = formatCmsValue(item[key]);
     if (!value) {
       continue;
@@ -245,6 +282,151 @@ function mapCmsDeal(item: MicroCMSDeal): Property | null {
   };
 }
 
+const RENT_CATEGORY_TO_KIND: Record<string, RentBuildingKind> = {
+  アパート: "apartment",
+  マンション: "mansion",
+  戸建住宅: "house",
+  "店舗・倉庫": "store-warehouse",
+};
+
+function resolveBuildingKind(
+  category: string[] | undefined,
+): RentBuildingKind | undefined {
+  for (const label of category ?? []) {
+    const kind = RENT_CATEGORY_TO_KIND[label];
+    if (kind) {
+      return kind;
+    }
+  }
+  return undefined;
+}
+
+function resolveLayoutGroup(values: string[] | undefined): LayoutGroup | undefined {
+  const text = (values ?? []).join(" ");
+  if (text.includes("1K/1DK/1LDK") || text.includes("1K・1DK・1LDK")) {
+    return "1";
+  }
+  if (text.includes("2K/2DK/2LDK") || text.includes("2K・2DK・2LDK")) {
+    return "2";
+  }
+  if (text.includes("3K/3DK/3LDK") || text.includes("3K・3DK・3LDK")) {
+    return "3";
+  }
+  return undefined;
+}
+
+type MicroCMSRent = MicroCMSDeal & {
+  layout_category?: string[];
+  fee_rent?: string;
+  fee_deposit?: string;
+  fee_gratuity?: string;
+  fee_common?: string;
+  parking?: string;
+};
+
+const localRentProperties: Property[] = [
+  {
+    slug: "maison-aile-takada",
+    categoryKey: "rent/apartment",
+    buildingKind: "apartment",
+    layoutGroup: "1",
+    name: "メゾンエール高田",
+    address: "新潟県上越市東城町３丁目",
+    layout: "1K",
+    rentFee: "35,000円",
+    deposit: "１ヶ月",
+    gratuity: "なし",
+    commonFee: "なし",
+    parking: "3,000円",
+    builtYear: "平成６年３月",
+    notes: "平成２９年３月リフォーム",
+    images: [],
+    detailFields: [
+      { label: "物件名", value: "メゾンエール高田" },
+      { label: "種別", value: "アパート" },
+      { label: "所在地", value: "新潟県上越市東城町３丁目" },
+      { label: "間取", value: "1K" },
+      { label: "間取り分類", value: "1K/1DK/1LDK" },
+      { label: "賃料/月", value: "35,000円" },
+      { label: "敷金", value: "１ヶ月" },
+      { label: "礼金", value: "なし" },
+      { label: "共益費", value: "なし" },
+      { label: "駐車場", value: "3,000円" },
+      { label: "築年数", value: "平成６年３月" },
+      { label: "備考", value: "平成２９年３月リフォーム", preWrap: true },
+    ],
+  },
+];
+
+function mapCmsRent(item: MicroCMSRent): Property | null {
+  const buildingKind = resolveBuildingKind(item.category);
+  if (!buildingKind) {
+    return null;
+  }
+
+  const images = (item.images ?? []).map((image, index) => ({
+    src: image.url,
+    alt: `${item.name}の画像${index + 1}`,
+    width: image.width,
+    height: image.height,
+  }));
+
+  return {
+    slug: item.slug?.trim() || item.id,
+    categoryKey: `rent/${buildingKind}`,
+    buildingKind,
+    layoutGroup: resolveLayoutGroup(item.layout_category),
+    name: item.name,
+    address: item.address,
+    layout: item.layout,
+    rentFee: item.fee_rent,
+    deposit: item.fee_deposit,
+    gratuity: item.fee_gratuity,
+    commonFee: item.fee_common,
+    parking: item.parking,
+    builtYear: item.building_age,
+    notes: item.notes,
+    thumbnail: images[0],
+    images,
+    detailFields: buildDetailFields(item, RENT_FIELD_ORDER),
+  };
+}
+
+async function fetchCmsRentProperties(): Promise<Property[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("rent");
+
+  const client = getMicroCMSClient();
+  if (!client) {
+    return [];
+  }
+
+  try {
+    const data = await client.getList<MicroCMSRent>({
+      endpoint: "rent",
+      queries: {
+        limit: 100,
+        orders: "-publishedAt",
+      },
+    });
+
+    return data.contents
+      .map(mapCmsRent)
+      .filter((property): property is Property => property !== null);
+  } catch (cause) {
+    throw new MicroCMSFetchError("賃貸物件の取得に失敗しました。", { cause });
+  }
+}
+
+export async function getRentProperties(): Promise<Property[]> {
+  if (!isMicroCMSConfigured()) {
+    return localRentProperties;
+  }
+
+  return fetchCmsRentProperties();
+}
+
 async function fetchCmsDealProperties(): Promise<Property[]> {
   "use cache";
   cacheLife("hours");
@@ -283,20 +465,53 @@ export async function getDealProperties(): Promise<Property[]> {
 export async function getPropertiesByCategoryKey(
   categoryKey: CategoryDefinition["key"],
 ): Promise<Property[]> {
-  const properties = await getDealProperties();
-  return properties.filter((property) => property.categoryKey === categoryKey);
+  const definition = getAllCategoryDefinitions().find(
+    (category) => category.key === categoryKey,
+  );
+  if (!definition) {
+    return [];
+  }
+
+  if (definition.transactionType === "deal") {
+    const properties = await getDealProperties();
+    return properties.filter((property) => property.categoryKey === categoryKey);
+  }
+
+  const rent = definition.rent;
+  if (!rent) {
+    return [];
+  }
+
+  const properties = await getRentProperties();
+  return properties.filter((property) => {
+    if (property.buildingKind !== rent.buildingKind) {
+      return false;
+    }
+    if (!rent.layoutGroup) {
+      return true;
+    }
+    return property.layoutGroup === rent.layoutGroup;
+  });
 }
 
 export async function getPropertyBySlug(
   slug: string,
 ): Promise<Property | undefined> {
-  const properties = await getDealProperties();
-  return properties.find((property) => property.slug === slug);
+  const [rentProperties, dealProperties] = await Promise.all([
+    getRentProperties(),
+    getDealProperties(),
+  ]);
+  return [...rentProperties, ...dealProperties].find(
+    (property) => property.slug === slug,
+  );
 }
 
 export async function getPropertySlugs(): Promise<string[]> {
-  const properties = await getDealProperties();
-  return properties.map((property) => property.slug);
+  const [rentProperties, dealProperties] = await Promise.all([
+    getRentProperties(),
+    getDealProperties(),
+  ]);
+  return [...rentProperties, ...dealProperties].map((property) => property.slug);
 }
 
 export function getDetailFields(property: Property): PropertyDetailField[] {

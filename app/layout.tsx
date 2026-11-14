@@ -24,9 +24,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="ja" className={`${notoSansJP.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
         <header className="flex justify-between items-center py-4 px-4 bg-red-100 dark:bg-black">
-          <h1>太陽不動産株式会社</h1>
+          <h1><Link href="/">太陽不動産株式会社</Link></h1>
           <div className="flex gap-4">
-            <Link href="/">ホーム</Link>
+            <Link href="/infos">お知らせ</Link>
+            <Link href="/rent">賃貸物件</Link>
             <Link href="/deal">売買物件</Link>
             <Link href="/company">会社概要</Link>
             <Link href="/contact">お問い合わせ</Link>

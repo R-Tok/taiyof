@@ -32,6 +32,19 @@ export type CategoryDefinition = {
   };
 };
 
+export const LAYOUT_GROUP_LABELS: Record<LayoutGroup, string> = {
+  "1": "1K/1DK/1LDK",
+  "2": "2K/2DK/2LDK",
+  "3": "3K/3DK/3LDK",
+};
+
+export const RENT_HUB = {
+  title: "賃貸物件",
+  intro:
+    "こちらでは、学生・一人暮らしに最適なアパート物件から家族でも充分な間取りのマンション・戸建などの賃貸物件を掲載しています。ビジネス向けには店舗・倉庫などの物件も掲載しておりますので、お気軽にお問い合わせ下さい。また、掲載物件には仲介物件もありますので、成約の際には別途、仲介手数料が必要となります。",
+  note: "掲載物件は随時更新しています。成約の際、仲介物件は別途仲介手数料が必要です。",
+} as const;
+
 export const DEAL_HUB = {
   title: "売買物件",
   intro:
@@ -39,16 +52,37 @@ export const DEAL_HUB = {
   note: "掲載物件は随時更新しています。成約の際、仲介物件は別途仲介手数料が必要です。",
 } as const;
 
+const rentBuildingLabels: Record<RentBuildingKind, string> = {
+  apartment: "アパート",
+  mansion: "マンション",
+  house: "戸建住宅",
+  "store-warehouse": "店舗・倉庫",
+};
+
+const rentBuildingDescriptions: Record<RentBuildingKind, string> = {
+  apartment: "学生・一人暮らし向けのアパート",
+  mansion: "家族でも使える間取りのマンション",
+  house: "戸建の賃貸住宅",
+  "store-warehouse": "店舗・倉庫などの事業用物件",
+};
+
 const rentCategories: CategoryDefinition[] = [
+  ...(["apartment", "mansion", "house", "store-warehouse"] as const).map(
+    (buildingKind) => ({
+      transactionType: "rent" as const,
+      segments: [buildingKind],
+      key: `rent/${buildingKind}`,
+      href: `/rent/${buildingKind}`,
+      title: rentBuildingLabels[buildingKind],
+      hubLabel: rentBuildingLabels[buildingKind],
+      description: rentBuildingDescriptions[buildingKind],
+      rent: { buildingKind },
+    }),
+  ),
   ...(["apartment", "mansion"] as const).flatMap((buildingKind) =>
     (["1", "2", "3"] as const).map((layoutGroup) => {
-      const buildingLabel = buildingKind === "apartment" ? "アパート" : "マンション";
-      const layoutLabel =
-        layoutGroup === "1"
-          ? "1K・1DK・1LDK"
-          : layoutGroup === "2"
-            ? "2K・2DK・2LDK"
-            : "3K・3DK・3LDK";
+      const buildingLabel = rentBuildingLabels[buildingKind];
+      const layoutLabel = LAYOUT_GROUP_LABELS[layoutGroup];
       const segments = [buildingKind, layoutGroup];
       return {
         transactionType: "rent" as const,
@@ -56,31 +90,12 @@ const rentCategories: CategoryDefinition[] = [
         key: `rent/${segments.join("/")}`,
         href: `/rent/${segments.join("/")}`,
         title: `${buildingLabel} ${layoutLabel}`,
-        hubLabel: `${buildingLabel} ${layoutLabel}`,
+        hubLabel: buildingLabel,
+        description: rentBuildingDescriptions[buildingKind],
         rent: { buildingKind, layoutGroup },
       };
     }),
   ),
-  {
-    transactionType: "rent",
-    segments: ["house"],
-    key: "rent/house",
-    href: "/rent/house",
-    title: "戸建住宅",
-    hubLabel: "戸建住宅",
-    legacyListId: 3,
-    rent: { buildingKind: "house" },
-  },
-  {
-    transactionType: "rent",
-    segments: ["store-warehouse"],
-    key: "rent/store-warehouse",
-    href: "/rent/store-warehouse",
-    title: "店舗・倉庫",
-    hubLabel: "店舗・倉庫",
-    legacyListId: 4,
-    rent: { buildingKind: "store-warehouse" },
-  },
 ];
 
 const dealCategories: CategoryDefinition[] = [
@@ -131,7 +146,7 @@ export function getDealHubCategories(): CategoryDefinition[] {
 }
 
 export function getRentHubCategories(): CategoryDefinition[] {
-  return rentCategories;
+  return rentCategories.filter((category) => !category.rent?.layoutGroup);
 }
 
 export function getAllCategoryDefinitions(): CategoryDefinition[] {
@@ -146,6 +161,21 @@ export function getCategoryBreadcrumbs(category: CategoryDefinition): {
     category.transactionType === "deal"
       ? { label: "売買物件", href: "/deal" }
       : { label: "賃貸物件", href: "/rent" };
+
+  if (category.rent?.layoutGroup) {
+    const parent = resolveCategory("rent", [category.rent.buildingKind]);
+    return [
+      hub,
+      {
+        label: parent?.title ?? category.title,
+        href: parent?.href,
+      },
+      {
+        label: LAYOUT_GROUP_LABELS[category.rent.layoutGroup],
+        href: category.href,
+      },
+    ];
+  }
 
   return [hub, { label: category.title, href: category.href }];
 }
