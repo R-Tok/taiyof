@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e7eef5"/>
+      <stop offset="0.55" stop-color="#f4efe8"/>
+      <stop offset="1" stop-color="#d9cfc3"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8f3b32"/>
+      <stop offset="1" stop-color="#6d2a24"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1180" cy="210" r="92" fill="#e23b2f"/>
+  <circle cx="1180" cy="210" r="128" fill="none" stroke="#e23b2f" stroke-width="10" stroke-dasharray="18 16"/>
+  <path d="M0 520 C220 470 380 560 620 510 C860 460 1040 560 1280 500 C1420 466 1520 490 1600 470 L1600 900 L0 900 Z" fill="#c5b7a6"/>
+  <path d="M0 610 C260 560 420 650 700 600 C980 550 1180 660 1600 590 L1600 900 L0 900 Z" fill="#b7a894"/>
+  <g fill="url(#roof)">
+    <path d="M90 640 L250 520 L410 640 Z"/>
+    <path d="M470 670 L680 500 L890 670 Z"/>
+    <path d="M930 650 L1120 530 L1310 650 Z"/>
+  </g>
+  <g fill="#f7f4ef">
+    <rect x="120" y="640" width="260" height="180"/>
+    <rect x="520" y="670" width="320" height="170"/>
+    <rect x="980" y="650" width="280" height="190"/>
+  </g>
+  <g fill="#0c4a6e">
+    <rect x="160" y="690" width="48" height="70"/>
+    <rect x="250" y="690" width="48" height="70"/>
+    <rect x="580" y="720" width="56" height="78"/>
+    <rect x="690" y="720" width="56" height="78"/>
+    <rect x="1040" y="710" width="52" height="74"/>
+    <rect x="1140" y="710" width="52" height="74"/>
+  </g>
+  <rect x="0" y="820" width="1600" height="80" fill="#8d8174"/>
+</svg>
