@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
+import { submitContact } from "@/app/contact/actions";
 import { CONTACT_PAGE } from "@/lib/contact";
 
 type ContactFormProps = {
@@ -8,16 +9,10 @@ type ContactFormProps = {
 };
 
 export function ContactForm({ defaultPropertyName = "" }: ContactFormProps) {
-  const [submitted, setSubmitted] = useState(false);
+  const [state, formAction, pending] = useActionState(submitContact, null);
 
   return (
-    <form
-      className="mt-8 space-y-6"
-      onSubmit={(event) => {
-        event.preventDefault();
-        setSubmitted(true);
-      }}
-    >
+    <form className="mt-8 space-y-6" action={formAction}>
       <div className="space-y-2">
         <label htmlFor="propertyName" className="block text-sm font-medium text-stone-700">
           問い合わせ物件名
@@ -100,14 +95,18 @@ export function ContactForm({ defaultPropertyName = "" }: ContactFormProps) {
       <div className="pt-2">
         <button
           type="submit"
-          className="w-full rounded-lg bg-sky-900 px-5 py-3 text-sm font-medium text-white hover:bg-sky-950 sm:w-auto"
+          disabled={pending}
+          className="w-full rounded-lg bg-sky-900 px-5 py-3 text-sm font-medium text-white hover:bg-sky-950 disabled:opacity-60 sm:w-auto"
         >
-          送信
+          {pending ? "送信中…" : "送信"}
         </button>
         <p className="mt-3 text-sm text-stone-500">{CONTACT_PAGE.submitNote}</p>
-        {submitted ? (
-          <p className="mt-2 text-sm text-sky-900" role="status">
-            入力内容は送信されません（デモ表示）。本番ではメール送信や CMS 連携を接続します。
+        {state ? (
+          <p
+            className={`mt-2 text-sm ${state.status === "error" ? "text-red-700" : "text-sky-900"}`}
+            role="status"
+          >
+            {state.message}
           </p>
         ) : null}
       </div>

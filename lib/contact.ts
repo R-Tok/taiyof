@@ -6,7 +6,7 @@ export const CONTACT_PAGE = {
   phone: "025-524-7651",
   phoneDisplay: "025-524-7651",
   submitNote:
-    "送信処理は未接続です。フォームの入力と物件名の引き継ぎのみ確認できます。",
+    "開発中の差出人は onboarding@resend.dev です。届く宛先は .env.local の CONTACT_TO_EMAIL で、独自ドメインを追加するまでは Resend に登録したメールアドレスだけです。",
 } as const;
 
 /** 現行 site の contact/index.php?param= 互換 */
