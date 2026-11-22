@@ -22,7 +22,7 @@ Vercel へデプロイしただけでは、すべてが本番ではない。Prod
 | `CONTACT_TO_EMAIL` | Resend 登録の Gmail | 同じ Gmail | 会社の受信アドレス |
 | `CONTACT_FROM_EMAIL` | 空欄（`onboarding@resend.dev` になる） | 空欄 | 独自ドメインを Resend で検証したあと、その差出人 |
 
-会社の受信アドレスは、現行サイトの `info@taiyo-f.net` を予定している。変更するなら Production の `CONTACT_TO_EMAIL` だけを直す。
+現行サイトの差出人は `webmaster@taiyo-f.net`。会社がその箱で問い合わせを読むなら、Production の `CONTACT_TO_EMAIL` にこのアドレスを書く。`CONTACT_FROM_EMAIL` は、Resend で `taiyo-f.net` の検証が終わるまで空欄のままにする。メールサーバー契約を残しても、Resend がそのアドレスから送る許可にはならない。
 
 ## 独自ドメインを足す前の制約
 
