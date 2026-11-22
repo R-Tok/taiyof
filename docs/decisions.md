@@ -70,7 +70,7 @@ URL ツリーの詳細は [`docs/site-map.md`](./site-map.md) を参照。
 | 項目 | 暫定 | 理由 |
 | --- | --- | --- |
 | サイトの公開先 | Vercel | Next.js と相性がよく、公開作業が少ない。現行の PHP サーバーではこのアプリを動かしにくい |
-| メール送信 | Resend。開発中の差出人は `onboarding@resend.dev` | 独自ドメイン未設定でも、Resend 登録アドレス宛には送れる。React Email は使わない |
+| メール送信 | Resend。開発中の差出人は `onboarding@resend.dev` | 開発の値は `.env.local`。本番の値は Vercel の Production。記載先は `docs/email-env.md` |
 
 ## 未決定
 
